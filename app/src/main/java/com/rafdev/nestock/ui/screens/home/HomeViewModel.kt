@@ -46,6 +46,18 @@ class HomeViewModel @Inject constructor(
         .map { it.filter { item -> item.isLowStock } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val expiringItems: StateFlow<List<Item>> = _items
+        .map { items ->
+            val now = System.currentTimeMillis()
+            val sevenDays = 7L * 24 * 60 * 60 * 1000
+            items.filter { item ->
+                item.expirationDate != null &&
+                item.expirationDate.toDate().time > now &&
+                item.expirationDate.toDate().time <= now + sevenDays
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     // Cantidad de ítems por categoryId
     val categorySummary: StateFlow<Map<String, Int>> = _items
         .map { items -> items.groupBy { it.categoryId }.mapValues { it.value.size } }

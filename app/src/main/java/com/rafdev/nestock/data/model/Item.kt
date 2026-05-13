@@ -15,5 +15,6 @@ data class Item(
     val imageUrl: String? = null,
     val updatedBy: String = "",
     val updatedAt: Timestamp = Timestamp.now(),
-    val isLowStock: Boolean = false
+    val isLowStock: Boolean = false,
+    val expirationDate: com.google.firebase.Timestamp? = null
 )

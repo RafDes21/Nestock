@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.rafdev.nestock.ui.components.ConfirmDeleteDialog
 import com.rafdev.nestock.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,6 +133,44 @@ fun ItemDetailScreen(
                                 style = MaterialTheme.typography.bodyMedium.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
                                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).background(Background).padding(8.dp, 6.dp)
                             )
+                        }
+                    }
+                }
+
+                // Fecha de vencimiento
+                if (it.expirationDate != null) {
+                    item {
+                        val now = System.currentTimeMillis()
+                        val expMillis = it.expirationDate.toDate().time
+                        val isExpired = expMillis < now
+                        val daysLeft = ((expMillis - now) / (1000L * 60 * 60 * 24)).toInt()
+                        val isExpiringSoon = !isExpired && daysLeft <= 7
+                        val chipColor = if (isExpired || isExpiringSoon) OrangeAlert else GreenMid
+                        val chipLabel = when {
+                            isExpired -> "Vencido"
+                            isExpiringSoon -> if (daysLeft == 0) "Vence hoy" else "Vence en ${daysLeft}d"
+                            else -> "Vigente"
+                        }
+                        Column(
+                            Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 0.dp).padding(bottom = 11.dp)
+                                .clip(RoundedCornerShape(13.dp)).background(Surface)
+                                .border(1.dp, Border, RoundedCornerShape(13.dp)).padding(13.dp)
+                        ) {
+                            Text("Fecha de vencimiento", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = TextMuted)
+                            Spacer(Modifier.height(8.dp))
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it.expirationDate.toDate()),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (isExpired || isExpiringSoon) OrangeAlert else TextPrimary
+                                )
+                                Box(
+                                    Modifier.clip(RoundedCornerShape(9.dp)).background(chipColor).padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(chipLabel, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Surface)
+                                }
+                            }
                         }
                     }
                 }

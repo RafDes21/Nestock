@@ -1,5 +1,7 @@
 package com.rafdev.nestock.ui.screens.inventory
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,6 +9,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.rafdev.nestock.data.model.Category
 import com.rafdev.nestock.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +39,7 @@ fun AddItemScreen(
 
     val categories by viewModel.categories.collectAsState()
     var showUnitMenu by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -168,6 +176,38 @@ fun AddItemScreen(
                         )
                     }
                 }
+                Spacer(Modifier.height(10.dp))
+
+                // Fecha de vencimiento (opcional)
+                FormField(label = "Fecha de vencimiento (opcional)") {
+                    Box(Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = viewModel.expirationDateMillis?.let { formatDate(it) } ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            placeholder = { Text("Sin fecha", style = MaterialTheme.typography.bodySmall, color = TextMuted) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            trailingIcon = {
+                                if (viewModel.expirationDateMillis != null) {
+                                    IconButton(onClick = { viewModel.expirationDateMillis = null }) {
+                                        Icon(Icons.Filled.Close, contentDescription = "Quitar fecha", modifier = Modifier.size(18.dp))
+                                    }
+                                } else {
+                                    Icon(Icons.Filled.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TextMuted)
+                                }
+                            }
+                        )
+                        Box(
+                            Modifier.matchParentSize().clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { showDatePicker = true }
+                        )
+                    }
+                }
+
                 Spacer(Modifier.height(16.dp))
 
                 Button(
@@ -191,7 +231,30 @@ fun AddItemScreen(
             }
         }
     }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = viewModel.expirationDateMillis
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.expirationDateMillis = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 }
+
+private fun formatDate(millis: Long): String =
+    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

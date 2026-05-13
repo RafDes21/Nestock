@@ -22,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.rafdev.nestock.ui.components.AlertBanner
 import com.rafdev.nestock.ui.components.BottomNavBar
 import com.rafdev.nestock.ui.components.CategoryCard
+import com.rafdev.nestock.ui.components.ExpirationBanner
 import com.rafdev.nestock.ui.navigation.Screen
 import com.rafdev.nestock.ui.theme.*
 
@@ -36,6 +37,7 @@ fun HomeScreen(
 ) {
     val household by viewModel.household.collectAsState()
     val lowStockItems by viewModel.lowStockItems.collectAsState()
+    val expiringItems by viewModel.expiringItems.collectAsState()
     val categorySummary by viewModel.categorySummary.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val householdId by viewModel.householdId.collectAsState()
@@ -216,6 +218,10 @@ fun HomeScreen(
 
             item {
                 Column(Modifier.padding(horizontal = 15.dp, vertical = 14.dp)) {
+                    if (expiringItems.isNotEmpty()) {
+                        ExpirationBanner(expiringItems = expiringItems)
+                        Spacer(Modifier.height(8.dp))
+                    }
                     if (lowStockItems.isNotEmpty()) {
                         AlertBanner(lowStockItems = lowStockItems)
                         Spacer(Modifier.height(12.dp))
