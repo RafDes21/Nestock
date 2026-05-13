@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Nestock</string>
+    <!-- Reemplazá este valor con tu Web Client ID de Firebase Console → Authentication → Sign-in method → Google -->
+    <string name="default_web_client_id">995879279837-c52p1sstokj7ep72oc0ed2tu5r2ltdla.apps.googleusercontent.com</string>
+</resources>
