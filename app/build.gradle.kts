@@ -6,17 +6,30 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.google.services)
 }
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = mutableMapOf<String, String>()
+
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.forEachLine { line ->
+        if (line.contains("=") && !line.startsWith("#")) {
+            val (key, value) = line.split("=", limit = 2)
+            keystoreProperties[key.trim()] = value.trim()
+        }
+    }
+}
 
 android {
     namespace = "com.rafdev.nestock"
     compileSdk = 36
 
+
+
     signingConfigs {
         create("release") {
-            storeFile = file("C:\\Users\\israe\\keys\\nestock")
-            storePassword = "1234567526"
-            keyAlias = "nestock"
-            keyPassword = "1234567526"
+            storeFile = file(keystoreProperties["STORE_FILE"]!!)
+            storePassword = keystoreProperties["STORE_PASSWORD"]!!
+            keyAlias = keystoreProperties["KEY_ALIAS"]!!
+            keyPassword = keystoreProperties["KEY_PASSWORD"]!!
         }
     }
 
@@ -74,6 +87,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.analytics)
     // Google Sign-In
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
