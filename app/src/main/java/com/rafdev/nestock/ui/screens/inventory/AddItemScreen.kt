@@ -1,7 +1,7 @@
 package com.rafdev.nestock.ui.screens.inventory
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -180,31 +180,35 @@ fun AddItemScreen(
 
                 // Fecha de vencimiento (opcional)
                 FormField(label = "Fecha de vencimiento (opcional)") {
-                    Box(Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = viewModel.expirationDateMillis?.let { formatDate(it) } ?: "",
-                            onValueChange = {},
-                            readOnly = true,
-                            placeholder = { Text("Sin fecha", style = MaterialTheme.typography.bodySmall, color = TextMuted) },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(10.dp),
-                            trailingIcon = {
-                                if (viewModel.expirationDateMillis != null) {
-                                    IconButton(onClick = { viewModel.expirationDateMillis = null }) {
-                                        Icon(Icons.Filled.Close, contentDescription = "Quitar fecha", modifier = Modifier.size(18.dp))
-                                    }
-                                } else {
-                                    Icon(Icons.Filled.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TextMuted)
-                                }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, Border, RoundedCornerShape(10.dp)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clickable { showDatePicker = true }
+                                .padding(horizontal = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(Icons.Filled.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TextMuted)
+                            Text(
+                                viewModel.expirationDateMillis?.let { formatDate(it) } ?: "Sin fecha",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (viewModel.expirationDateMillis != null) TextPrimary else TextMuted
+                            )
+                        }
+                        if (viewModel.expirationDateMillis != null) {
+                            IconButton(onClick = { viewModel.expirationDateMillis = null }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Quitar fecha", modifier = Modifier.size(16.dp), tint = TextMuted)
                             }
-                        )
-                        Box(
-                            Modifier.matchParentSize().clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { showDatePicker = true }
-                        )
+                        }
                     }
                 }
 
