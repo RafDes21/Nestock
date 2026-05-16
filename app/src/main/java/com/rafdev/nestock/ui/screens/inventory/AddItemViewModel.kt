@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
 import com.rafdev.nestock.data.model.Category
 import com.rafdev.nestock.data.model.Item
 import com.rafdev.nestock.data.repository.CategoryRepository
@@ -13,6 +14,7 @@ import com.rafdev.nestock.di.AppStateHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +34,7 @@ class AddItemViewModel @Inject constructor(
     var unit            by mutableStateOf("und")
     var minQuantity     by mutableStateOf("1")
     var optimalQuantity by mutableStateOf("5")
+    var expirationDateMillis by mutableStateOf<Long?>(null)
     var isLoading       by mutableStateOf(false)
     var error           by mutableStateOf<String?>(null)
 
@@ -63,6 +66,7 @@ class AddItemViewModel @Inject constructor(
             unit = item.unit
             minQuantity = item.minQuantity.fmt()
             optimalQuantity = item.optimalQuantity.fmt()
+            expirationDateMillis = item.expirationDate?.toDate()?.time
         }
     }
 
@@ -83,7 +87,8 @@ class AddItemViewModel @Inject constructor(
                 quantity        = quantity.toDoubleOrNull() ?: 0.0,
                 minQuantity     = minQuantity.toDoubleOrNull() ?: 1.0,
                 optimalQuantity = optimalQuantity.toDoubleOrNull() ?: 5.0,
-                unit            = unit
+                unit            = unit,
+                expirationDate  = expirationDateMillis?.let { Timestamp(Date(it)) }
             )
             val result = if (isEditMode) {
                 itemRepository.updateItem(hid, item)

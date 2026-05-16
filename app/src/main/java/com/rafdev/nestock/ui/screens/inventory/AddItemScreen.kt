@@ -1,5 +1,7 @@
 package com.rafdev.nestock.ui.screens.inventory
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,10 +9,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -18,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.rafdev.nestock.data.model.Category
 import com.rafdev.nestock.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +40,7 @@ fun AddItemScreen(
 
     val categories by viewModel.categories.collectAsState()
     var showUnitMenu by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -168,6 +177,42 @@ fun AddItemScreen(
                         )
                     }
                 }
+                Spacer(Modifier.height(10.dp))
+
+                // Fecha de vencimiento (opcional)
+                FormField(label = "Fecha de vencimiento (opcional)") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, Border, RoundedCornerShape(10.dp)),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clickable { showDatePicker = true }
+                                .padding(horizontal = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(Icons.Filled.CalendarMonth, contentDescription = null, modifier = Modifier.size(18.dp), tint = TextMuted)
+                            Text(
+                                viewModel.expirationDateMillis?.let { formatDate(it) } ?: "Sin fecha",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (viewModel.expirationDateMillis != null) TextPrimary else TextMuted
+                            )
+                        }
+                        if (viewModel.expirationDateMillis != null) {
+                            IconButton(onClick = { viewModel.expirationDateMillis = null }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Quitar fecha", modifier = Modifier.size(16.dp), tint = TextMuted)
+                            }
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(16.dp))
 
                 Button(
@@ -191,7 +236,30 @@ fun AddItemScreen(
             }
         }
     }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = viewModel.expirationDateMillis
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.expirationDateMillis = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 }
+
+private fun formatDate(millis: Long): String =
+    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
